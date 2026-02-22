@@ -1,0 +1,26 @@
+
+{
+# Don't forget to replace with your email
+# used for Let's Encrypt certificate registration and renewal notifications
+# see https://caddyserver.com/docs/caddyfile/options#email for details
+#  email admin@example.com
+
+}
+
+# Don't forget to replace with your domain
+www.example.com, example.com {
+ 
+  log {
+    format console 
+		output file /srv/caddy/logs/example_web.access.log
+	}
+  reverse_proxy {
+    header_up Host {http.reverse_proxy.upstream.host} 
+    to http://127.0.0.1:51080    
+  }
+  handle_errors {
+    root * /srv/caddy/html
+    rewrite * /oqtane_502.html
+    file_server browse
+  }
+}

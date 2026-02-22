@@ -1,0 +1,55 @@
+services:
+  oqtane:
+    image: mcr.microsoft.com/dotnet/aspnet:10.0
+    restart: unless-stopped
+    env_file:
+     - oqtane.env
+    ports:
+      - "127.0.0.1:51080:51080"
+      - "51081:8443"
+    volumes:
+      - /srv/oqtane/app:/app
+      - /srv/oqtane/ini:/ini
+    working_dir: /app
+    command: ["dotnet", "Oqtane.Server.dll"]
+    logging:
+      driver: journald
+      options:
+        tag: oqtane
+    networks:
+      - oqtane
+      - noinet
+    depends_on:
+      - oqtane_db
+
+  oqtane_db:
+    image: mysql:8.0
+    restart: unless-stopped
+    env_file: mysqldb.env
+    logging:
+      driver: journald
+      options:
+        tag: oqtane-db  
+    volumes:
+      - /srv/oqtane/mysql:/var/lib/mysql
+    networks:
+      - noinet
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    depends_on:
+      - oqtane_db
+    networks:
+      - noinet
+      - oqtane
+    ports:
+      - 51089:8080
+
+networks:
+  oqtane:
+    driver: bridge
+    enable_ipv6: false
+  noinet:
+    enable_ipv6: false
+    internal: true
